@@ -3,6 +3,7 @@ local function get_register_formspec(pos)
 	local spos = pos.x.. "," ..pos.y .. "," .. pos.z
 	local formspec =
 		"size[8,6.5]" ..
+		default.gui_bg ..
 		default.gui_bg_img ..
 		default.gui_slots ..
 		"label[2.1,0;Sell]" ..
@@ -18,6 +19,7 @@ end
 
 local formspec_register =
 	"size[8,9]" ..
+	default.gui_bg ..
 	default.gui_bg_img ..
 	default.gui_slots ..
 	"label[0,0;Register]" ..
@@ -27,6 +29,7 @@ local formspec_register =
 
 local formspec_stock =
 	"size[8,9]" ..
+	default.gui_bg ..
 	default.gui_bg_img ..
 	default.gui_slots ..
 	"label[0,0;Stock]" ..
@@ -46,7 +49,7 @@ minetest.register_node("shop:shop", {
 		"default_wood.png^shop_coin.png",
 		"default_wood.png^shop_coin.png"
 	},
-	groups = {choppy = 3},
+	groups = {choppy = 3, oddly_breakable_by_hand = 1},
 	paramtype2 = "facedir",
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
 		local meta = minetest.get_meta(pos)
