@@ -6,13 +6,14 @@ local function get_register_formspec(pos)
 		default.gui_bg ..
 		default.gui_bg_img ..
 		default.gui_slots ..
-		"label[2.1,0;Sell]" ..
-		"label[5.15,0;For]" ..
-		"button[0,1.5;1.75,1;stock;Stock]" ..
-		"button[6.25,1.5;1.75,1;register;Register]" ..
-		"button[3.5,1.25;1,1;ok;OK]" ..
-		"list[nodemeta:" .. spos .. ";sell;2,0.5;1,1;]" ..
-		"list[nodemeta:" .. spos .. ";buy;5,0.5;1,1;]" ..
+		"label[0,1;Sell]" ..
+		"label[3,1;For]" ..
+		"button[0,0;2,1;stock;Stock]" ..
+		"button[3,0;2,1;register;Register]" ..
+		"button_exit[7,0;1,1;exit;X]" ..
+		"button[7,1;1,1;ok;OK]" ..
+		"list[nodemeta:" .. spos .. ";sell;1,1;1,1;]" ..
+		"list[nodemeta:" .. spos .. ";buy;4,1;1,1;]" ..
 		"list[current_player;main;0,2.75;8,4;]"
 	return formspec
 end
@@ -42,12 +43,12 @@ minetest.register_privilege("shop_admin", "Shop administration and maintainence"
 minetest.register_node("shop:shop", {
 	description = "Shop",
 	tiles = {
-		"default_wood.png^shop_coin.png",
-		"default_wood.png",
-		"default_wood.png^shop_coin.png",
-		"default_wood.png^shop_coin.png",
-		"default_wood.png^shop_coin.png",
-		"default_wood.png^shop_coin.png"
+		"shop_shop_topbottom.png",
+		"shop_shop_topbottom.png",
+		"shop_shop_side.png",
+		"shop_shop_side.png",
+		"shop_shop_side.png",
+		"shop_shop_front.png",
 	},
 	groups = {choppy = 3, oddly_breakable_by_hand = 1},
 	paramtype2 = "facedir",
@@ -84,8 +85,12 @@ minetest.register_node("shop:shop", {
 				minetest.show_formspec(player, "shop:shop", formspec_register)
 			end
 		elseif fields.stock then
-			minetest.show_formspec(player, "shop:shop", formspec_stock)
-			return
+			if player ~= owner and (not minetest.check_player_privs(player, "shop_admin")) then
+				minetest.chat_send_player(player, "Only the shop owner can open the stock.")
+				return
+			else
+				minetest.show_formspec(player, "shop:shop", formspec_stock)
+			end
 		elseif fields.ok then
 			if inv:is_empty("sell") or
 			    inv:is_empty("buy") or
