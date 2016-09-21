@@ -102,22 +102,26 @@ minetest.register_node("shop:shop", {
 				return
 			end
 			
-			if inv:is_empty("sell") or
-			    inv:is_empty("buy") or
-			    (not inv:room_for_item("register", b[1])) then
-				minetest.chat_send_player(player, "Shop inventory is empty/full.")
-				return
-			end
-
 			local err = "";
-			if not inv:contains_item("stock", s[1]) and meta:get_int("admin_shop")~=1 then
-				err = "Error. Shop out of stock.";
-				meta:set_string("infotext", err);
-			end
+			if meta:get_int("admin_shop")~=1 then -- check shop
+				
+				if inv:is_empty("sell") or
+					inv:is_empty("buy") or
+					(not inv:room_for_item("register", b[1])) then
+					minetest.chat_send_player(player, "Shop inventory is empty/full.")
+					return
+				end
 			
-			if not inv:room_for_item("register", b[1]) and meta:get_int("admin_shop")~=1 then
-				err = "Error. Shop register full.";
-				meta:set_string("infotext", err);
+				if not inv:contains_item("stock", s[1]) then
+					err = "Error. Shop out of stock.";
+					meta:set_string("infotext", err);
+				end
+				
+				if not inv:room_for_item("register", b[1]) then
+					err = "Error. Shop register full.";
+					meta:set_string("infotext", err);
+				end
+			
 			end
 			
 			if not pinv:room_for_item("main", s[1]) then
