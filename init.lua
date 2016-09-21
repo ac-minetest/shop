@@ -2,27 +2,25 @@ local function get_register_formspec(pos)
 	local meta = minetest.get_meta(pos)
 	local spos = pos.x.. "," ..pos.y .. "," .. pos.z
 	local formspec =
-		"size[8,6.5]" ..
-		default.gui_bg ..
-		default.gui_bg_img ..
-		default.gui_slots ..
-		"label[0,1;Sell]" ..
-		"label[3,1;For]" ..
-		"button[0,0;2,1;stock;Stock]" ..
-		"button[3,0;2,1;register;Register]" ..
-		"button_exit[7,0;1,1;exit;X]" ..
-		"button[7,1;1,1;ok;OK]" ..
-		"list[nodemeta:" .. spos .. ";sell;1,1;1,1;]" ..
-		"list[nodemeta:" .. spos .. ";buy;4,1;1,1;]" ..
-		"list[current_player;main;0,2.75;8,4;]"
+		"size[8,6]" ..
+		--default.gui_bg ..
+		--default.gui_bg_img ..
+		--default.gui_slots ..
+		"button[0,0;2,1;stock;Stock (selling)]" ..
+		"button[3,0;2,1;register;Register (buying)]" ..
+		--"button_exit[7,0;1,1;exit;X]" ..
+		"button[7,0;1,1;ok;TRADE]" ..
+		"list[nodemeta:" .. spos .. ";sell;2,0;1,1;]" ..
+		"list[nodemeta:" .. spos .. ";buy;5,0;1,1;]" ..
+		"list[current_player;main;0,2;8,4;]"
 	return formspec
 end
 
 local formspec_register =
 	"size[8,9]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	--default.gui_bg ..
+	--default.gui_bg_img ..
+	--default.gui_slots ..
 	"label[0,0;Register]" ..
 	"list[current_name;register;0,0.75;8,4;]" ..
 	"list[current_player;main;0,5.25;8,4;]" ..
@@ -30,9 +28,9 @@ local formspec_register =
 
 local formspec_stock =
 	"size[8,9]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	--default.gui_bg ..
+	--default.gui_bg_img ..
+	--default.gui_slots ..
 	"label[0,0;Stock]" ..
 	"list[current_name;stock;0,0.75;8,4;]" ..
 	"list[current_player;main;0,5.25;8,4;]" ..
@@ -57,9 +55,13 @@ minetest.register_node("shop:shop", {
 		local owner = placer:get_player_name()
 
 		meta:set_string("owner", owner)
-		meta:set_string("infotext", "Shop (Owned by " .. owner .. ")")
+		meta:set_string("infotext", "Uncofigured Shop (Owned by " .. owner .. ")")
 		meta:set_string("formspec", get_register_formspec(pos))
 
+		if minetest.check_player_privs(owner, "privs") then
+			meta:set_int("admin_shop",1);
+		end
+		
 		local inv = meta:get_inventory()
 		inv:set_size("buy", 1)
 		inv:set_size("sell", 1)
@@ -83,6 +85,7 @@ minetest.register_node("shop:shop", {
 				return
 			else
 				minetest.show_formspec(player, "shop:shop", formspec_register)
+				meta:set_string("infotext", "\nSELLING: " .. s[1]:to_string() .. "\nBUYING : " .. b[1]:to_string() .. "\n".. "owner " .. owner)
 			end
 		elseif fields.stock then
 			if player ~= owner and (not minetest.check_player_privs(player, "shop_admin")) then
@@ -90,26 +93,53 @@ minetest.register_node("shop:shop", {
 				return
 			else
 				minetest.show_formspec(player, "shop:shop", formspec_stock)
+				meta:set_string("infotext", "\nSELLING: " .. s[1]:to_string() .. "\nBUYING : " .. b[1]:to_string() .. "\n".. "owner " .. owner)
 			end
 		elseif fields.ok then
+			
+			if player==owner and not minetest.check_player_privs(player, "shop_admin") then 
+				minetest.chat_send_player(player, "Can't trade with yourself")
+				return
+			end
+			
 			if inv:is_empty("sell") or
 			    inv:is_empty("buy") or
 			    (not inv:room_for_item("register", b[1])) then
-				minetest.chat_send_player(player, "Shop closed.")
+				minetest.chat_send_player(player, "Shop inventory is empty/full.")
 				return
 			end
 
-			if (pinv:contains_item("main", b[1]) or
-			  pinv:contains_item("funds", b[1])) and
-			    inv:contains_item("stock", s[1]) and
-			    pinv:room_for_item("main", s[1]) then
-				pinv:remove_item("main", b[1])
-				inv:add_item("register", b[1])
-				inv:remove_item("stock", s[1])
-				pinv:add_item("main", s[1])
-			else
-				minetest.chat_send_player(player, "No funds.")
+			local err = "";
+			if not inv:contains_item("stock", s[1]) and meta:get_int("admin_shop")~=1 then
+				err = "Error. Shop out of stock.";
+				meta:set_string("infotext", err);
 			end
+			
+			if not inv:room_for_item("register", b[1]) and meta:get_int("admin_shop")~=1 then
+				err = "Error. Shop register full.";
+				meta:set_string("infotext", err);
+			end
+			
+			if not pinv:room_for_item("main", s[1]) then
+				err = "Error. You dont have space in your inventory.";
+			end
+			
+			if not pinv:contains_item("main", b[1]) then
+				err = "Error. You dont have enough items to pay.";
+			end
+			
+			if err~="" then 
+				minetest.chat_send_player(player,err);
+				return 
+			end
+	
+			
+			pinv:remove_item("main", b[1])
+			inv:add_item("register", b[1])
+			inv:remove_item("stock", s[1])
+			pinv:add_item("main", s[1])
+			minetest.chat_send_player(player, "Sold " .. s[1]:to_string() .. " for " .. b[1]:to_string())
+			
 		end
 	end,
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
@@ -161,18 +191,18 @@ minetest.register_node("shop:shop", {
 
 })
 
-minetest.register_craftitem("shop:coin", {
+-- minetest.register_craftitem("shop:coin", {
 
-	description = "Gold Coin",
-	inventory_image = "shop_coin.png",
-})
+	-- description = "Gold Coin",
+	-- inventory_image = "shop_coin.png",
+-- })
 
-minetest.register_craft({
-	output = "shop:coin 9",
-	recipe = {
-		{"default:gold_ingot"},
-	}
-})
+-- minetest.register_craft({
+	-- output = "shop:coin 9",
+	-- recipe = {
+		-- {"default:gold_ingot"},
+	-- }
+-- })
 
 minetest.register_craft({
 	output = "default:gold_ingot",
