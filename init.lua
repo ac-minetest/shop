@@ -6,8 +6,8 @@ local function get_register_formspec(pos)
 		--default.gui_bg ..
 		--default.gui_bg_img ..
 		--default.gui_slots ..
-		"button[0,0;2,1;stock;Stock (selling)]" ..
-		"button[3,0;2,1;register;Register (buying)]" ..
+		"button[0,0;2,1;stock;SELLING]" ..
+		"button[3,0;2,1;register;BUYING]" ..
 		--"button_exit[7,0;1,1;exit;X]" ..
 		"button[7,0;1,1;ok;TRADE]" ..
 		"list[nodemeta:" .. spos .. ";sell;2,0;1,1;]" ..
