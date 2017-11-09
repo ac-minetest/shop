@@ -55,7 +55,7 @@ minetest.register_node("shop:shop", {
 		local owner = placer:get_player_name()
 
 		meta:set_string("owner", owner)
-		meta:set_string("infotext", "Uncofigured Shop (Owned by " .. owner .. ")")
+		meta:set_string("infotext", "Unconfigured Shop (Owned by " .. owner .. ")")
 		meta:set_string("formspec", get_register_formspec(pos))
 
 		if minetest.check_player_privs(owner, "privs") then
