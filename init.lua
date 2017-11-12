@@ -36,7 +36,7 @@ local formspec_stock =
 	"list[current_player;main;0,5.25;8,4;]" ..
 	"listring[]"
 
-minetest.register_privilege("shop_admin", "Shop administration and maintainence")
+minetest.register_privilege("shop_admin", "Shop administration and maintenance")
 
 minetest.register_node("shop:shop", {
 	description = "Shop",
@@ -55,7 +55,7 @@ minetest.register_node("shop:shop", {
 		local owner = placer:get_player_name()
 
 		meta:set_string("owner", owner)
-		meta:set_string("infotext", "Uncofigured Shop (Owned by " .. owner .. ")")
+		meta:set_string("infotext", "Unconfigured Shop (Owned by " .. owner .. ")")
 		meta:set_string("formspec", get_register_formspec(pos))
 
 		if minetest.check_player_privs(owner, "privs") then
@@ -125,11 +125,11 @@ minetest.register_node("shop:shop", {
 			end
 			
 			if not pinv:room_for_item("main", s[1]) then
-				err = "Error. You dont have space in your inventory.";
+				err = "Error. You don't have space in your inventory.";
 			end
 			
 			if not pinv:contains_item("main", b[1]) then
-				err = "Error. You dont have enough items to pay.";
+				err = "Error. You don't have enough items to pay.";
 			end
 			
 			if err~="" then 
