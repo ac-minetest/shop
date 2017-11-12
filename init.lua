@@ -125,11 +125,11 @@ minetest.register_node("shop:shop", {
 			end
 			
 			if not pinv:room_for_item("main", s[1]) then
-				err = "Error. You dont have space in your inventory.";
+				err = "Error. You don't have space in your inventory.";
 			end
 			
 			if not pinv:contains_item("main", b[1]) then
-				err = "Error. You dont have enough items to pay.";
+				err = "Error. You don't have enough items to pay.";
 			end
 			
 			if err~="" then 
